@@ -4,6 +4,17 @@ This repo contains the starter code for the Route Planning project.
 
 <img src="map.png" width="600" height="450" />
 
+## Instalation process
+In the /CppND-Route-Planning-Project/thirdparty/
+
+git clone --recurse-submodules https://github.com/cpp-io2d/P0267_RefImpl
+cd P0267_RefImpl
+mkdir Debug
+cd Debug
+cmake ..
+cmake --build .
+sudo make install
+
 ## Cloning
 
 When cloning this project, be sure to use the `--recurse-submodules` flag. Using HTTPS:
