@@ -51,6 +51,14 @@ void RouteModel::Node::FindNeighbors() {
     }
 }
 
+bool RouteModel::Node::operator < (const RouteModel::Node & other) const {
+    bool condition;
+
+    condition = (h_value + g_value) < (other.h_value + other.g_value);
+
+    return condition;
+    }
+
 
 RouteModel::Node &RouteModel::FindClosestNode(float x, float y) {
     Node input;
