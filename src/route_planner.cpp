@@ -33,10 +33,18 @@ float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
 // - For each node in current_node.neighbors, add the neighbor to open_list and set the node's visited attribute to true.
 
 void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
-    std::cout << "-------- AddNeighbors --------" << std::endl;
+    // std::cout << "-------- AddNeighbors --------" << std::endl;
     // std::cout << "number of neighbor of current node:" << current_node->neighbors.size() << std::endl;
     current_node->FindNeighbors();
     // std::cout << "number of neighbor of current node:" << current_node->neighbors.size() << std::endl;
+    for (auto neighbor : current_node->neighbors){
+        neighbor->parent = current_node;
+        neighbor->h_value = CalculateHValue(neighbor);
+        neighbor->g_value = current_node->g_value + current_node->distance(*neighbor);
+
+        neighbor->visited = true;
+        open_list.emplace_back(neighbor);
+    }
 }
 
 
@@ -46,15 +54,19 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Create a pointer to the node in the list with the lowest sum.
 // - Remove that node from the open_list.
 // - Return the pointer.
-
 RouteModel::Node *RoutePlanner::NextNode() {
-	/* Sort our list of open nodes by their sum of h and g value */
-	std::sort(open_list.begin(), open_list.end());
+    // observation: I tried to overload the operator< in the class RouteModel::Node but it didn't sort 
+    // correctly the list. It only worked when providing the function directly to the std::sort function
+    // even if they are exactly the same... Operator function can be checked at route_model.cpp and route_model.h
+	std::sort(open_list.begin(), open_list.end(), [](const RouteModel::Node *a, const RouteModel::Node *b)
+	{
+		return (a->h_value + a->g_value) < (b->h_value + b->g_value);
+	});
+    // std::sort(open_list.begin(), open_list.end());
 
-	/* Get the node with lowest value and remove it from the list */
-	RouteModel::Node* lowest_node = open_list.front();
+	RouteModel::Node* closest_node = open_list.front();
 	open_list.erase(open_list.begin());
-	return lowest_node;
+	return closest_node;
 }
 
 
@@ -70,9 +82,19 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
+    path_found.insert(path_found.begin(), *current_node);
+    
+    RouteModel::Node* current_parent = nullptr;
 
     // TODO: Implement your solution here.
+    while (current_node != start_node){
+        current_parent = current_node->parent;
+        distance += current_node->distance(*current_parent);
 
+
+        current_node = current_parent;
+        path_found.insert(path_found.begin(), *current_node);
+    }
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
 
@@ -93,9 +115,18 @@ void RoutePlanner::AStarSearch() {
     start_node->visited = true;
 	open_list.emplace_back(start_node);
 
-    current_node = NextNode();
-    
-    std::cout << " Starting Node: " << "(" << current_node->x << " , " << current_node->y << ")" << std::endl;
-    AddNeighbors(current_node);
-    std::cout << "end neighbors" << std::endl;
+    // std::cout << "Starting Astar Loop " << std::endl;
+    while (open_list.size() > 0){
+        current_node = NextNode();
+
+        // std::cout << " Current Node: " << "(" << current_node->x << " , " << current_node->y << ")" << std::endl;
+        if(current_node->distance(*end_node) == 0){
+            // std::cout << "Destination reached!" << std::endl;
+            m_Model.path = ConstructFinalPath(current_node);
+            return;
+        }
+
+        AddNeighbors(current_node);
+        
+    }
 }

@@ -66,8 +66,8 @@ int main(int argc, const char **argv)
     std::cout << "Provide end y position: ";
     std::cin >> end_y;
 
-    std::cout << "Provided starting point: " << start_x << ", " << start_y << std::endl;
-    std::cout << "Provided end point: " << end_x << ", " << end_y << std::endl;
+    // std::cout << "Provided starting point: " << start_x << ", " << start_y << std::endl;
+    // std::cout << "Provided end point: " << end_x << ", " << end_y << std::endl;
 
     // Build Model.
     RouteModel model{osm_data};
